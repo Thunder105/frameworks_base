@@ -164,6 +164,7 @@ import com.android.systemui.statusbar.phone.ScrimController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.UserSwitcherController;
 import com.android.systemui.util.DeviceConfigProxy;
+import com.android.internal.util.horizon.udfps.UdfpsUtils;
 import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.systemui.util.settings.SecureSettings;
 import com.android.systemui.util.settings.SystemSettings;
@@ -1649,7 +1650,10 @@ public class KeyguardViewMediator implements CoreStartable, Dumpable,
         // explicitly DO NOT want to call
         // mKeyguardViewControllerLazy.get().setKeyguardGoingAwayState(false)
         // here, since that will mess with the device lock state.
-        mUpdateMonitor.dispatchKeyguardGoingAway(false);
+        boolean isUdfps = deviceHasUdfps();
+        if (!isUdfps) {
+            mUpdateMonitor.dispatchKeyguardGoingAway(false);
+        }
 
         notifyStartedGoingToSleep();
     }
@@ -3866,6 +3870,9 @@ public class KeyguardViewMediator implements CoreStartable, Dumpable,
             Log.d(TAG, "Occlude animation cancelled by WM.");
             mInteractionJankMonitor.cancel(CUJ_LOCKSCREEN_OCCLUSION);
         }
+        private boolean deviceHasUdfps() {
+        return UdfpsUtils.hasUdfpsSupport(mContext);
+        }
     }
 
     private IRemoteAnimationRunner validatingRemoteAnimationRunner(IRemoteAnimationRunner wrapped) {
@@ -3889,5 +3896,7 @@ public class KeyguardViewMediator implements CoreStartable, Dumpable,
                 wrapped.onAnimationStart(transit, apps, wallpapers, nonApps, finishedCallback);
             }
         };
-    }
+   
+
+ }
 }
